@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+model Post {
+  id String @id @default(uuid())
+  title String
+  content String @db.Text
+  authorId String
+  thumbnail String?
+  isFeatured Boolean?
+  tags String[]
+  views Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  status PostStatus @default(PUBLISHED)
+  comments Comment[]
+  @@index([authorId])
+  @@map("posts")
+}
+enum PostStatus{
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+model Comment {
+  id String @id @default(uuid())
+  content String
+  authorId String
+  post Post @relation(fields: [postId],references: [id])
+  postId String
+  commentStatus CommentStatus @default(APPROVED)
+  parent Comment? @relation("commentReplies" ,fields: [parentId],references: [id])
+  replies Comment[] @relation("commentReplies")
+  parentId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  @@index([authorId])
+  @@index([postId])
+  @@map("comments")
+}
+enum CommentStatus{
+  APPROVED
+  REJECT
+}
